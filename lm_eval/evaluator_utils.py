@@ -266,9 +266,10 @@ def prepare_print_tasks(
             task_or_group_obj = _sort_task_dict(task_or_group_obj)
         elif isinstance(task_or_group_name, str):
             name = task_or_group_name
-            if isinstance(task_or_group_obj, Task):
-                # string_name = task_or_group_obj.task_name
-                name = task_or_group_obj.task_name
+            # prompt-fairness edit: commented this out bc we define tasks during runtime
+            # if isinstance(task_or_group_obj, Task):
+            #     # string_name = task_or_group_obj.task_name
+            #     name = task_or_group_obj.task_name
             from_configurable_group = False
 
         task_agg[name] = results[name].copy()
