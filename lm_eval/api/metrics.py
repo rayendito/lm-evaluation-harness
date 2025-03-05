@@ -69,6 +69,23 @@ def matthews_corrcoef(items):
     preds = unzipped_list[1]
     return matthews_corrcoef(golds, preds)
 
+@register_aggregation("bleu_dua")
+def bleu_dua(items):
+    """The Bilingual Evaluation Understudy Score, or BLEU for short, is a metric
+    for evaluating a generated sentence to a reference sentence. It counts matching
+    n-grams in the candidate translation to n-grams in the reference text, where
+    1-gram or unigram would be each token and a bigram comparison would be each
+    word pair. The comparison is made regardless of word order
+    Source: https://machinelearningmastery.com/calculate-bleu-score-for-text-python/
+    Paper: https://www.aclweb.org/anthology/P02-1040/
+
+    Higher is better
+    """
+    refs = list(zip(*items))[0]
+    preds = list(zip(*items))[1]
+    
+    refs, preds = _sacreformat(refs, preds)
+    return sacrebleu.corpus_bleu(preds, refs).score
 
 @register_aggregation("bleu")
 def bleu(items):
@@ -84,6 +101,7 @@ def bleu(items):
     """
     refs = list(zip(*items))[0]
     preds = list(zip(*items))[1]
+    
     refs, preds = _sacreformat(refs, preds)
     return sacrebleu.corpus_bleu(preds, refs).score
 
@@ -318,6 +336,14 @@ def mcc_fn(items):  # This is a passthrough function
 def f1_fn(items):  # This is a passthrough function
     return items
 
+@register_metric(
+    metric="bleu_dua",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="bleu_dua",
+)
+def bleu_dua_fn(items):  # This is a passthrough function
+    return items
 
 @register_metric(
     metric="bleu",
