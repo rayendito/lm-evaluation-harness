@@ -85,6 +85,10 @@ def bleu_dua(items):
     preds = list(zip(*items))[1]
     
     refs, preds = _sacreformat(refs, preds)
+
+    print("refs, preds gannnnn")
+    print(refs, preds)
+
     return sacrebleu.corpus_bleu(preds, refs).score
 
 @register_aggregation("bleu")
