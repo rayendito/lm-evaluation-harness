@@ -142,24 +142,22 @@ def brier_score(items):  # This is a passthrough function
 
 @register_aggregation("or_custom")
 def or_custom(items):
-    refs = list(zip(*items))[0]
-    preds = list(zip(*items))[1].split("\n")
+    refs = items[0][0].split("\n")
+    preds = items[0][1]
 
     fuzzy_scores = []
-    for p in preds:
-        fuzzy_scores.append(fuzz.partial_ratio(p, refs[0])/100)
-
+    for r in refs:
+        fuzzy_scores.append(fuzz.partial_ratio(r, preds)/100)
     return max(fuzzy_scores)
 
 @register_aggregation("and_custom")
 def and_custom(items):
-    refs = list(zip(*items))[0]
-    preds = list(zip(*items))[1].split("\n")
+    refs = items[0][0].split("\n")
+    preds = items[0][1]
 
     fuzzy_scores = []
-    for p in preds:
-        fuzzy_scores.append(fuzz.partial_ratio(p, refs[0])/100)
-
+    for r in refs:
+        fuzzy_scores.append(fuzz.partial_ratio(r, preds)/100)
     return sum(fuzzy_scores)/len(fuzzy_scores)
 
 # ================================================================================================
