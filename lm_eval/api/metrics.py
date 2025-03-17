@@ -11,6 +11,7 @@ import numpy as np
 import sacrebleu
 
 from lm_eval.api.registry import register_aggregation, register_metric
+from fuzzywuzzy import fuzz
 
 
 eval_logger = logging.getLogger(__name__)
@@ -139,6 +140,29 @@ def brier_score(items):  # This is a passthrough function
     gold_one_hot = np.eye(num_class)[gold]
     return np.mean(np.sum((predictions - gold_one_hot) ** 2, axis=1))
 
+@register_aggregation("or_custom")
+def or_custom(items):
+    refs = list(zip(*items))[0]
+    preds = list(zip(*items))[1].split("\n")
+
+    fuzzy_scores = []
+    for p in preds:
+        fuzzy_scores.append(fuzz.partial_ratio(p, refs[0])/100)
+
+    return max(fuzzy_scores)
+
+@register_aggregation("and_custom")
+def and_custom(items):
+    refs = list(zip(*items))[0]
+    preds = list(zip(*items))[1].split("\n")
+
+    fuzzy_scores = []
+    for p in preds:
+        fuzzy_scores.append(fuzz.partial_ratio(p, refs[0])/100)
+
+    return sum(fuzzy_scores)/len(fuzzy_scores)
+
+# ================================================================================================
 
 @register_metric(
     metric="brier_score",
@@ -365,6 +389,24 @@ def chrf_fn(items):  # This is a passthrough function
     aggregation="ter",
 )
 def ter_fn(items):  # This is a passthrough function
+    return items
+
+@register_metric(
+    metric="or_custom",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="or_custom",
+)
+def or_custom_fn(items):  # This is a passthrough function
+    return items
+
+@register_metric(
+    metric="and_custom",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="and_custom",
+)
+def and_custom_fn(items):  # This is a passthrough function
     return items
 
 
