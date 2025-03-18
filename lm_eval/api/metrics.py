@@ -172,12 +172,41 @@ def embedding_similarity(items):
     similarities = sent_transformer_model.similarity(embeddings[0], embeddings[1])
     return similarities.item()
 
-@register_aggregation("absa_f1")
-def absa_f1(items):
-    # TODO: implement actual absa f1 implementation
-    refs = items[0][0].split("\n")
+def absa_parse_aspect_sentiment(input_strings):
+    pattern = r'\[([\'"])(.*?)[\'"],\s*([\'"])(.*?)[\'"]\]'
+    output = re.findall(pattern, input_strings)
+    if not output:
+        return []
+    return [[item[1], item[3]] for item in output]
+
+@register_aggregation("absa")
+def absa(items):
+    refs = items[0][0]
     preds = items[0][1]
-    return 1
+    gold_pt = absa_parse_aspect_sentiment(refs)
+    pred_pt = absa_parse_aspect_sentiment(preds)
+    """
+    code snippet from https://github.com/IsakZhang/Generative-ABSA/blob/main/eval_utils.py
+    Function to compute F1 scores with pred and gold pairs/triplets
+    The input needs to be already processed
+    """
+    # number of true postive, gold standard, predicted aspect terms
+    n_tp, n_gold, n_pred = 0, 0, 0
+
+    for i in range(len(pred_pt)):
+        n_gold += len(gold_pt[i])
+        n_pred += len(pred_pt[i])
+
+        for t in pred_pt[i]:
+            if t in gold_pt[i]:
+                n_tp += 1
+
+    precision = float(n_tp) / float(n_pred) if n_pred != 0 else 0
+    recall = float(n_tp) / float(n_gold) if n_gold != 0 else 0
+    f1 = 2 * precision * recall / (precision + recall) if precision != 0 or recall != 0 else 0
+    scores = {'precision': precision, 'recall': recall, 'f1': f1}
+
+    return scores['f1']    
 
 # ================================================================================================
 
@@ -436,12 +465,12 @@ def embedding_similarity_fn(items):  # This is a passthrough function
     return items
 
 @register_metric(
-    metric="absa_f1",
+    metric="absa",
     higher_is_better=True,
     output_type="generate_until",
-    aggregation="absa_f1",
+    aggregation="absa",
 )
-def absa_f1_fn(items):  # This is a passthrough function
+def absa_fn(items):  # This is a passthrough function
     return items
 
 @register_metric(
