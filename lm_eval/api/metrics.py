@@ -176,7 +176,7 @@ def absa_parse_aspect_sentiment(input_strings):
     pattern = r'\[([\'"])(.*?)[\'"],\s*([\'"])(.*?)[\'"]\]'
     output = re.findall(pattern, input_strings)
     if not output:
-        return []
+        return {}
     list_of_pairs = [[item[1], item[3]] for item in output]
     return [{pa[0] : pa[1]} for pa in list_of_pairs]
 
