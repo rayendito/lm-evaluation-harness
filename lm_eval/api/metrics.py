@@ -168,8 +168,8 @@ def and_custom(items):
     return sum(fuzzy_scores)/len(fuzzy_scores)
 
 
-@register_aggregation("eng_embd_sim")
-def eng_embd_sim(items):
+@register_aggregation("embedding_similarity")
+def embedding_similarity(items):
     sentences = items[0]
     embeddings = sent_transformer_model.encode(sentences)
     similarities = sent_transformer_model.similarity(embeddings[0], embeddings[1])
@@ -430,12 +430,12 @@ def and_custom_fn(items):  # This is a passthrough function
     return items
 
 @register_metric(
-    metric="eng_embd_sim",
+    metric="embedding_similarity",
     higher_is_better=True,
     output_type="generate_until",
-    aggregation="eng_embd_sim",
+    aggregation="embedding_similarity",
 )
-def eng_embd_sim_fn(items):  # This is a passthrough function
+def embedding_similarity_fn(items):  # This is a passthrough function
     return items
 
 @register_metric(
