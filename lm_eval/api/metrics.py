@@ -1,3 +1,4 @@
+import os
 import logging
 import math
 import random
@@ -5,6 +6,8 @@ import re
 import string
 from collections.abc import Iterable
 from typing import List
+from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
 
 import evaluate
 import numpy as np
@@ -13,8 +16,12 @@ import sacrebleu
 from lm_eval.api.registry import register_aggregation, register_metric
 from fuzzywuzzy import fuzz
 
+load_dotenv()
 
 eval_logger = logging.getLogger(__name__)
+
+hf_hub_cache = os.getenv("HF_HUB_CACHE")
+sent_transformer_model = SentenceTransformer("all-MiniLM-L6-v2", cache_dir=hf_hub_cache)
 
 
 # Register Aggregations First
@@ -159,6 +166,21 @@ def and_custom(items):
     for r in refs:
         fuzzy_scores.append(fuzz.partial_ratio(r, preds)/100)
     return sum(fuzzy_scores)/len(fuzzy_scores)
+
+
+@register_aggregation("eng_embd_sim")
+def eng_embd_sim(items):
+    sentences = items[0]
+    embeddings = sent_transformer_model.encode(sentences)
+    similarities = sent_transformer_model.similarity(embeddings[0], embeddings[1])
+    return similarities
+
+@register_aggregation("absa_f1")
+def absa_f1(items):
+    # TODO: implement actual absa f1 implementation
+    refs = items[0][0].split("\n")
+    preds = items[0][1]
+    return 1
 
 # ================================================================================================
 
@@ -407,6 +429,23 @@ def or_custom_fn(items):  # This is a passthrough function
 def and_custom_fn(items):  # This is a passthrough function
     return items
 
+@register_metric(
+    metric="eng_embd_sim",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="eng_embd_sim",
+)
+def eng_embd_sim_fn(items):  # This is a passthrough function
+    return items
+
+@register_metric(
+    metric="absa_f1",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="absa_f1",
+)
+def absa_f1_fn(items):  # This is a passthrough function
+    return items
 
 @register_metric(
     metric="acc_all",
