@@ -177,7 +177,8 @@ def absa_parse_aspect_sentiment(input_strings):
     output = re.findall(pattern, input_strings)
     if not output:
         return []
-    return [[item[1], item[3]] for item in output]
+    list_of_pairs = [[item[1], item[3]] for item in output]
+    return [{pa[0] : pa[1]} for pa in list_of_pairs]
 
 @register_aggregation("absa")
 def absa(items):
@@ -186,20 +187,16 @@ def absa(items):
     gold_pt = absa_parse_aspect_sentiment(refs)
     pred_pt = absa_parse_aspect_sentiment(preds)
     """
-    code snippet from https://github.com/IsakZhang/Generative-ABSA/blob/main/eval_utils.py
-    Function to compute F1 scores with pred and gold pairs/triplets
-    The input needs to be already processed
+    code snippet adapted from https://github.com/IsakZhang/Generative-ABSA/blob/main/eval_utils.py
     """
     # number of true postive, gold standard, predicted aspect terms
-    n_tp, n_gold, n_pred = 0, 0, 0
+    n_tp = 0
+    n_gold = len(gold_pt)
+    n_pred = len(pred_pt)
 
-    for i in range(len(pred_pt)):
-        n_gold += len(gold_pt[i])
-        n_pred += len(pred_pt[i])
-
-        for t in pred_pt[i]:
-            if t in gold_pt[i]:
-                n_tp += 1
+    for k, v in pred_pt.items():
+        if k in gold_pt and gold_pt[k] == v:
+            n_tp += 1
 
     precision = float(n_tp) / float(n_pred) if n_pred != 0 else 0
     recall = float(n_tp) / float(n_gold) if n_gold != 0 else 0
