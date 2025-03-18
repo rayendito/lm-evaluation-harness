@@ -7,7 +7,6 @@ import string
 from collections.abc import Iterable
 from typing import List
 from sentence_transformers import SentenceTransformer
-from dotenv import load_dotenv
 
 import evaluate
 import numpy as np
@@ -15,8 +14,6 @@ import sacrebleu
 
 from lm_eval.api.registry import register_aggregation, register_metric
 from fuzzywuzzy import fuzz
-
-load_dotenv()
 
 eval_logger = logging.getLogger(__name__)
 
