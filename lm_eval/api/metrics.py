@@ -18,7 +18,7 @@ from fuzzywuzzy import fuzz
 eval_logger = logging.getLogger(__name__)
 
 hf_hub_cache = os.getenv("HF_HUB_CACHE")
-sent_transformer_model = SentenceTransformer("all-MiniLM-L6-v2", cache_dir=hf_hub_cache)
+sent_transformer_model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder=hf_hub_cache)
 
 
 # Register Aggregations First
@@ -170,7 +170,7 @@ def embedding_similarity(items):
     sentences = items[0]
     embeddings = sent_transformer_model.encode(sentences)
     similarities = sent_transformer_model.similarity(embeddings[0], embeddings[1])
-    return similarities
+    return similarities.item()
 
 @register_aggregation("absa_f1")
 def absa_f1(items):
