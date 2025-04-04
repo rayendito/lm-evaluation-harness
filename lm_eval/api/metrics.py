@@ -6,20 +6,19 @@ import re
 import string
 from collections.abc import Iterable
 from typing import List
-from sentence_transformers import SentenceTransformer
 
 import evaluate
 import numpy as np
 import sacrebleu
 
 from lm_eval.api.registry import register_aggregation, register_metric
-from fuzzywuzzy import fuzz
 
 eval_logger = logging.getLogger(__name__)
 
-hf_hub_cache = os.getenv("HF_HUB_CACHE")
-sent_transformer_model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder=hf_hub_cache)
-
+# from fuzzywuzzy import fuzz
+# from sentence_transformers import SentenceTransformer
+# hf_hub_cache = os.getenv("HF_HUB_CACHE")
+# sent_transformer_model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder=hf_hub_cache)
 
 # Register Aggregations First
 @register_aggregation("bypass")
